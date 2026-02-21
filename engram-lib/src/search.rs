@@ -23,8 +23,8 @@ pub struct SearchIndex {
 #[derive(Debug, Clone)]
 pub struct SearchResult {
     pub file: PathBuf,
-    pub start: i64,
-    pub end: i64,
+    pub start: u64,
+    pub end: u64,
     pub text: String,
     pub score: f32,
 }
@@ -38,9 +38,9 @@ impl SearchIndex {
         let path_field = schema_builder.add_text_field("path", STRING | STORED);
         let text_field = schema_builder.add_text_field("text", TEXT | STORED);
         let start_field =
-            schema_builder.add_i64_field("start_ms", INDEXED | STORED);
+            schema_builder.add_u64_field("start_ms", INDEXED | STORED);
         let end_field =
-            schema_builder.add_i64_field("end_ms", INDEXED | STORED);
+            schema_builder.add_u64_field("end_ms", INDEXED | STORED);
         let segment_id_field =
             schema_builder.add_u64_field("segment_id", INDEXED | STORED);
 
@@ -218,7 +218,7 @@ impl SearchIndex {
 
             let start = retrieved_doc
                 .get_first(self.start_field)
-                .and_then(|v| v.as_i64())
+                .and_then(|v| v.as_u64())
                 .ok_or_else(|| {
                     EngramError::SearchError(
                         "Missing start field in result".into(),
@@ -227,7 +227,7 @@ impl SearchIndex {
 
             let end = retrieved_doc
                 .get_first(self.end_field)
-                .and_then(|v| v.as_i64())
+                .and_then(|v| v.as_u64())
                 .ok_or_else(|| {
                     EngramError::SearchError(
                         "Missing end field in result".into(),

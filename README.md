@@ -19,10 +19,10 @@ The repository is organized into two main components:
 
 This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE.md) file for details. You are free to use, modify, and distribute this software in accordance with the terms of the Apache 2.0 license.
 
-## TODO
+## Planned features
 
-- [ ] Settings
-- [ ] SQLite
-- [ ] Make the frontend usable
-- [ ] Preview
-- [ ] Downloadable results
+- [ ] Add Settings
+- [ ] Add SQLite integration to cache everything.
+- [ ] FFMPEG-Next?
+- [ ] Video
+- [ ] Making the frontend semi-usable
