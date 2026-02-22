@@ -6,7 +6,7 @@ use tantivy::{
 };
 
 use crate::index::MediaFile;
-use crate::subtitles::parse_srt_file;
+use crate::subtitles;
 use crate::{EngramResult, errors::EngramError};
 
 pub struct SearchIndex {
@@ -23,8 +23,8 @@ pub struct SearchIndex {
 #[derive(Debug, Clone)]
 pub struct SearchResult {
     pub file: PathBuf,
-    pub start: u64,
-    pub end: u64,
+    pub start: i64,
+    pub end: i64,
     pub text: String,
     pub score: f32,
 }
@@ -35,14 +35,13 @@ impl SearchIndex {
 
         let mut schema_builder = Schema::builder();
 
-        let path_field = schema_builder.add_text_field("path", STRING | STORED);
+        let path_field = schema_builder.add_text_field("file", STRING | STORED);
         let text_field = schema_builder.add_text_field("text", TEXT | STORED);
         let start_field =
-            schema_builder.add_u64_field("start_ms", INDEXED | STORED);
-        let end_field =
-            schema_builder.add_u64_field("end_ms", INDEXED | STORED);
+            schema_builder.add_i64_field("start", INDEXED | STORED);
+        let end_field = schema_builder.add_i64_field("end", INDEXED | STORED);
         let segment_id_field =
-            schema_builder.add_u64_field("segment_id", INDEXED | STORED);
+            schema_builder.add_u64_field("id", INDEXED | STORED);
 
         let schema = schema_builder.build();
 
@@ -72,11 +71,11 @@ impl SearchIndex {
 
         let schema = index.schema();
 
-        let path_field = schema.get_field("path")?;
+        let path_field = schema.get_field("file")?;
         let text_field = schema.get_field("text")?;
-        let start_field = schema.get_field("start_ms")?;
-        let end_field = schema.get_field("end_ms")?;
-        let segment_id_field = schema.get_field("segment_id")?;
+        let start_field = schema.get_field("start")?;
+        let end_field = schema.get_field("end")?;
+        let segment_id_field = schema.get_field("id")?;
 
         let writer = index.writer(100_000_000)?;
 
@@ -104,7 +103,7 @@ impl SearchIndex {
             )
         })?;
 
-        let segments = parse_srt_file(subtitle_path)?;
+        let segments = subtitles::parse_srt_file(subtitle_path)?;
 
         if segments.is_empty() {
             return Err(EngramError::SubtitleParseError(format!(
@@ -218,7 +217,7 @@ impl SearchIndex {
 
             let start = retrieved_doc
                 .get_first(self.start_field)
-                .and_then(|v| v.as_u64())
+                .and_then(|v| v.as_i64())
                 .ok_or_else(|| {
                     EngramError::SearchError(
                         "Missing start field in result".into(),
@@ -227,7 +226,7 @@ impl SearchIndex {
 
             let end = retrieved_doc
                 .get_first(self.end_field)
-                .and_then(|v| v.as_u64())
+                .and_then(|v| v.as_i64())
                 .ok_or_else(|| {
                     EngramError::SearchError(
                         "Missing end field in result".into(),
@@ -238,7 +237,7 @@ impl SearchIndex {
                 file: PathBuf::from(file),
                 start,
                 end,
-                text: text.to_string(),
+                text: text.into(),
                 score,
             });
         }

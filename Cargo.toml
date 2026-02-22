@@ -3,7 +3,7 @@ name = "engram"
 version = "0.0.0"
 edition = "2024"
 authors = ["Aditya Chaturvedi <aditya.chaturvedi1608@gmail.com>"]
-license = "Apache-2.0"
+license = "GPL-3.0"
 description = "A desktop application for local clip search."
 
 [profile.release]

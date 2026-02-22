@@ -12,8 +12,10 @@ pub enum EngramError {
     SubtitleParseError(String),
     #[error("Walk dir error: {0}")]
     WalkDirError(#[from] walkdir::Error),
+    #[error("Media error: {0}")]
+    MediaError(String),
     #[error("FFmpeg error: {0}")]
-    FfmpegError(String),
+    FFmpegError(#[from] ffmpeg_next::Error),
     #[error("Tantivy error: {0}")]
     TantivyError(#[from] tantivy::TantivyError),
     #[error("Search error: {0}")]
