@@ -3,9 +3,9 @@ use iced::{
     widget::{button, container, text_input},
 };
 
-pub const FONT_BYTES: &[u8] = include_bytes!("../assets/Courier New.ttf");
+pub const FONT_BYTES: &[u8] = include_bytes!("../assets/fonts/Courier New.ttf");
 pub const FONT_BOLD_BYTES: &[u8] =
-    include_bytes!("../assets/Courier New Bold.ttf");
+    include_bytes!("../assets/fonts/Courier New Bold.ttf");
 
 pub const DEFAULT_FONT: Font = Font {
     family: iced::font::Family::Name("Courier New"),

@@ -10,7 +10,7 @@ pub struct RawFrame {
     pub height: u32,
 }
 
-pub fn extract_intof32le(path: &Path) -> EngramResult<Box<[f32]>> {
+pub fn extract_audio(path: &Path) -> EngramResult<Box<[f32]>> {
     ffmpeg_next::init()?;
 
     let mut ictx = ffmpeg_next::format::input(path)?;

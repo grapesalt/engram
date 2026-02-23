@@ -20,4 +20,6 @@ pub enum EngramError {
     TantivyError(#[from] tantivy::TantivyError),
     #[error("Search error: {0}")]
     SearchError(String),
+    #[error("HTTP error: {0}")]
+    HttpError(#[from] ureq::Error),
 }
