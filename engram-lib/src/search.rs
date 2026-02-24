@@ -9,6 +9,8 @@ use crate::index::MediaFile;
 use crate::subtitles;
 use crate::{EngramResult, errors::EngramError};
 
+pub const DEFAULT_WRITER_BYTES: usize = 50_000_000;
+
 pub struct SearchIndex {
     index: Index,
     writer: IndexWriter,
@@ -23,9 +25,7 @@ pub struct SearchIndex {
 #[derive(Debug, Clone)]
 pub struct SearchResult {
     pub file: PathBuf,
-    pub start: i64,
-    pub end: i64,
-    pub text: String,
+    pub segment: subtitles::Segment,
     pub score: f32,
 }
 
@@ -47,7 +47,7 @@ impl SearchIndex {
 
         let index = Index::create_in_dir(path, schema.clone())?;
 
-        let writer = index.writer(100_000_000)?;
+        let writer = index.writer(DEFAULT_WRITER_BYTES)?;
 
         let reader = index
             .reader_builder()
@@ -77,7 +77,7 @@ impl SearchIndex {
         let end_field = schema.get_field("end")?;
         let segment_id_field = schema.get_field("id")?;
 
-        let writer = index.writer(100_000_000)?;
+        let writer = index.writer(DEFAULT_WRITER_BYTES)?;
 
         let reader = index
             .reader_builder()
@@ -97,6 +97,14 @@ impl SearchIndex {
     }
 
     pub fn add_media_file(&mut self, file: &MediaFile) -> EngramResult<()> {
+        if self.has_media_file(&file.media)? {
+            return Ok(());
+        }
+
+        self.insert_media_file(file)
+    }
+
+    fn insert_media_file(&mut self, file: &MediaFile) -> EngramResult<()> {
         let subtitle_path = file.subtitles.as_ref().ok_or_else(|| {
             EngramError::SearchError(
                 "MediaFile has no subtitles associated.".into(),
@@ -140,7 +148,7 @@ impl SearchIndex {
 
     pub fn update_media_file(&mut self, file: &MediaFile) -> EngramResult<()> {
         self.remove_media_file(&file.media);
-        self.add_media_file(file)?;
+        self.insert_media_file(file)?;
 
         Ok(())
     }
@@ -180,8 +188,10 @@ impl SearchIndex {
         let formatted_query = if query.starts_with('"') && query.ends_with('"')
         {
             query.to_string()
-        } else {
+        } else if query.split_whitespace().count() > 1 {
             format!("\"{}\"", query.replace('"', "\\\""))
+        } else {
+            query.to_string()
         };
 
         let query =
@@ -233,11 +243,15 @@ impl SearchIndex {
                     )
                 })?;
 
-            results.push(SearchResult {
-                file: PathBuf::from(file),
+            let segment = subtitles::Segment {
                 start,
                 end,
                 text: text.into(),
+            };
+
+            results.push(SearchResult {
+                file: PathBuf::from(file),
+                segment,
                 score,
             });
         }
