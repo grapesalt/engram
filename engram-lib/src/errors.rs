@@ -1,5 +1,10 @@
+use ffmpeg_next;
+use rusqlite;
 use std::io;
+use tantivy;
 use thiserror::Error;
+use ureq;
+use walkdir;
 use whisper_rs;
 
 #[derive(Debug, Error)]
@@ -22,4 +27,6 @@ pub enum EngramError {
     SearchError(String),
     #[error("HTTP error: {0}")]
     HttpError(#[from] ureq::Error),
+    #[error("Database error: {0}")]
+    DatabaseError(#[from] rusqlite::Error),
 }

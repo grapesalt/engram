@@ -23,7 +23,6 @@ This project is licensed under the GNU General Public License v3.0 (GPL-3). See 
 
 - [ ] Add Settings
 - [ ] Support other subtitle formats
-- [ ] Add SQLite integration to cache everything
 - [ ] Preview page
 - [ ] Making the frontend semi-usable
 - [ ] Async Downloads?

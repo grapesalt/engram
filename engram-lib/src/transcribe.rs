@@ -5,9 +5,9 @@ use whisper_rs::{
     FullParams, SamplingStrategy, WhisperContext, WhisperContextParameters,
 };
 
-use crate::EngramResult;
 use crate::errors::EngramError;
 use crate::subtitles;
+use crate::{EngramResult, get_engram_dir};
 
 pub enum TranscriberModel {
     Tiny,
@@ -41,24 +41,9 @@ impl Transcriber {
             }
         };
 
-        let output = dirs::data_dir()
-            .ok_or_else(|| {
-                EngramError::IoError(std::io::Error::new(
-                    std::io::ErrorKind::NotFound,
-                    "Could not determine data directory",
-                ))
-            })?
-            .join("engram")
-            .join(format!("{}.bin", model as u8));
+        let output = get_engram_dir()?.join(format!("{}.bin", model as u8));
 
         if !output.exists() {
-            fs::create_dir_all(output.parent().ok_or_else(|| {
-                EngramError::IoError(std::io::Error::new(
-                    std::io::ErrorKind::NotFound,
-                    "Could not determine parent directory for downloading model",
-                ))
-            })?)?;
-
             println!("Downloading model from {}.", link);
             let tmp = output.with_extension("tmp");
             let mut file = fs::File::create(&tmp)?;
